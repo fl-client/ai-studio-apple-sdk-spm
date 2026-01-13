@@ -1,0 +1,3 @@
+*.xcuserstate
+.swiftpm/xcode/*.xcworkspace/*.xcworkspacedata
+.swiftpm/xcode/xcuserdata/

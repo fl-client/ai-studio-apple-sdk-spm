@@ -1,0 +1,110 @@
+name: Update Package.swift With SPM Checksums
+
+on:
+  repository_dispatch:
+    types: [update-package-swift]
+
+jobs:
+  update:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      - name: Display received data
+        run: |
+          echo "Received payload:"
+          echo '${{ toJson(github.event.client_payload) }}'
+      
+      - name: Create combined checksums JSON
+        run: |
+          echo '${{ toJson(github.event.client_payload) }}' > payload.json
+          python3 -c "
+          import json
+          with open('payload.json', 'r') as f:
+              data = json.load(f)
+          
+          # Create the expected format with checksums_release structure
+          combined = {
+              'checksums_release': data.get('checksums_release', data.get('Release', {})),
+              'checksums_debug': data.get('checksums_debug', data.get('Debug', {}))
+          }
+          
+          # Handle case where data might be directly in the payload
+          if 'version' in data and 'checksums' in data:
+              combined['checksums_release'] = data
+          
+          with open('combined_checksums.json', 'w') as f:
+              json.dump(combined, f)
+          
+          print('Combined checksums JSON created')
+          "
+      
+      - name: Extract version for tagging
+        id: version
+        run: |
+          VERSION=$(python3 -c "
+          import json
+          with open('combined_checksums.json', 'r') as f:
+              data = json.load(f)
+          release_data = data.get('checksums_release', {})
+          print(release_data.get('version', 'unknown'))
+          ")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version extracted: $VERSION"
+      
+      - name: Update Package.swift
+        run: |
+          CHECKSUMS_JSON=$(cat combined_checksums.json)
+          python3 update_package.py --checksums "$CHECKSUMS_JSON"
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --exit-code Package.swift; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push changes
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add Package.swift
+          git commit -m "Update Package.swift to version ${{ steps.version.outputs.version }}"
+          git push
+      
+      - name: Create and push git tag
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          TAG_NAME="v${{ steps.version.outputs.version }}"
+          echo "Creating tag: $TAG_NAME"
+          git tag -a "$TAG_NAME" -m "Release version ${{ steps.version.outputs.version }}"
+          git push origin "$TAG_NAME"
+          echo "Successfully created and pushed tag: $TAG_NAME"
+      
+      - name: Create GitHub Release
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ steps.version.outputs.version }}"
+          release_name: "Release v${{ steps.version.outputs.version }}"
+          body: |
+            ## Changes
+            - Updated Package.swift to version ${{ steps.version.outputs.version }}
+            - Updated all framework checksums and URLs
+            
+            ## Frameworks Updated
+            This release includes updated checksums for all iOS SDK frameworks.
+          draft: false
+          prerelease: false
