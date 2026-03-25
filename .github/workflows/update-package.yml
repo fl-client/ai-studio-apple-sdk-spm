@@ -59,6 +59,19 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version extracted: $VERSION"
       
+      - name: Detect update source
+        id: source
+        run: |
+          IS_SHORTS_PLAYER=$(python3 -c "
+          import json
+          with open('combined_checksums.json', 'r') as f:
+              data = json.load(f)
+          checksums = data.get('checksums_release', {}).get('checksums', {})
+          print('true' if 'ShortsPlayer' in checksums else 'false')
+          ")
+          echo "is_shorts_player=$IS_SHORTS_PLAYER" >> $GITHUB_OUTPUT
+          echo "Update source is ShortsPlayer: $IS_SHORTS_PLAYER"
+      
       - name: Update Package.swift
         run: |
           CHECKSUMS_JSON=$(cat combined_checksums.json)
@@ -83,7 +96,7 @@ jobs:
           git push
       
       - name: Create and push git tag
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true' && steps.source.outputs.is_shorts_player == 'true'
         run: |
           TAG_NAME="v${{ steps.version.outputs.version }}"
           echo "Creating tag: $TAG_NAME"
@@ -92,7 +105,7 @@ jobs:
           echo "Successfully created and pushed tag: $TAG_NAME"
       
       - name: Create GitHub Release
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true' && steps.source.outputs.is_shorts_player == 'true'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
