@@ -16,8 +16,8 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "QPShortsPlayer",
-            url: "https://firstlight.jfrog.io/artifactory/ai-studio-apple-sdk-swift-local/Release/QPShortsPlayer/QPShortsPlayer-1.0.9.xcframework.zip",
-            checksum: "4a919026665350c1512f7d175eff28a6a51bf3287f85bc3a5e0381176d97f9d7"
+            url: "https://firstlight.jfrog.io/artifactory/ai-studio-apple-sdk-swift-local/Release/QPShortsPlayer/QPShortsPlayer-1.0.10.20260415053506.xcframework.zip",
+            checksum: "20780f80b3b7c7f8c532e075f605881bf4c2829b7f7463122cccf2d9297a6feb"
         ),
         .binaryTarget(
             name: "AIStudioCore",
