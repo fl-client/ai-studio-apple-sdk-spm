@@ -21,13 +21,13 @@ let package = Package(
         ),
         .binaryTarget(
             name: "AIStudioCore",
-            url: "https://firstlight.jfrog.io/artifactory/ai-stud-core-apple-swift-local/Release/AIStudioCore/AIStudioCore-0.0.13.xcframework.zip",
-            checksum: "5a2e677d8d04391202c99ddcece45a53b691cabaa1dffa9044c72d47bc778969"
+            url: "https://firstlight.jfrog.io/artifactory/ai-stud-core-apple-swift-local/Release/AIStudioCore/AIStudioCore-0.0.14.xcframework.zip",
+            checksum: "ed7ec6e881be2773b33a44c0b2d45cd507cab7158896a6f5f1be1c58d47a2879"
         ),
         .binaryTarget(
             name: "AIStudioNetwork",
-            url: "https://firstlight.jfrog.io/artifactory/ai-stud-core-apple-swift-local/Release/AIStudioNetwork/AIStudioNetwork-0.0.13.xcframework.zip",
-            checksum: "5c75934f158c1c7094c3480bdcabfdb91ff574a48dbc0c40c3a7e75727f0ee4b"
+            url: "https://firstlight.jfrog.io/artifactory/ai-stud-core-apple-swift-local/Release/AIStudioNetwork/AIStudioNetwork-0.0.14.xcframework.zip",
+            checksum: "7cb365c28c0a896a6116372076b8f2fc29ac5418e307576ca9b7bbd52ca3dee5"
         )
     ]
 )
